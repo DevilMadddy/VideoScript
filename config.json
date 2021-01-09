@@ -1,0 +1,19 @@
+{
+    "videoProcessingData": [
+        {
+            "teacher": "abcManisha",
+            "batch": "https://www.pepcoding.com/myClassroom/data-structures-and-algorithms-pitampura-feb-22-2020",
+            "url": "https://zoom.us/rec/share/igF1Jbxz1gshlgUcV5zmXiXFy4rl6mOeyNSlDBxM3ZpH6r8wspLyiPTlYLCPMcQu.HhwOXK4IfrNls8_z",
+            "password": "^=G#0R&I"
+        },
+        {
+            "teacher": "abcShreesh",
+            "batch": "https://www.pepcoding.com/myClassroom/data-structures-and-algorithms-pitampura-feb-22-2020",
+            "url": "https://zoom.us/rec/share/SAVyQFoEp0yj_hh6081V9lEf5th79XTgmx59Q56k2QbqQ0ISnOFNdLQzDDoNewk2.avSma0SWfrxzwFrt",
+            "password": "3!yT6J8u"
+        }
+    ],
+    "videoDirectory": "\\data\\",
+    "videoDownloadDirectory": "C:/Users/Public/Downloads",
+    "videoMaxLength": "3600000"
+}
