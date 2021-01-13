@@ -19,14 +19,13 @@ const { duration, min, fn } = require("moment");
 const fileSize = require("filesize");
 var command = new FfmpegCommand();
 const { width, height } = require("screenz");
-
 let id;
 const filedata = "";
 const writeLogFile = function () {
     const currpath = path.join(__dirname, config.videoDirectory);
     const logFolderpath = path.join(currpath, log);
     const logFilepath = path.join(logFolderpath, "log.txt");
-    filedata= fs.writeFile(logFilepath, "Process started", function (err) {
+    filedata = fs.writeFile(logFilepath, "Process started", function (err) {
         if (err) throw err;
         console.log('It\'s saved!');
     });
@@ -54,14 +53,14 @@ function downloadRecordings() {
     robot.mouseClick("left");
 }
 
-function createVideoDirPath(folderName) {
+function createVideoDirPath(teacherName, batch) {
     let currentDate = moment().format('MMM_D_YYYY');
-    var dir = config.videoDirectory + folderName + "\\" + currentDate;
+    var dir = path(__dirname, config.videoDir, teacherName, moment().format('MMM_D_YYYY'), batch);
     return dir;
 }
 
-function createDirectoryUsingFolderName(folderName) {
-    var path = __dirname + createVideoDirPath(folderName);
+function createBatchDirectory(path) {
+
     shell.mkdir('-p', path);
 }
 
@@ -113,10 +112,13 @@ function pSetInterval(interval) {
         }
     })
 }
-function copyDownloadedFiles(targetfolderName) {
-    var path = __dirname + createVideoDirPath(targetfolderName);
-    console.log(path);
-    shell.cp('-R', config.videoDownloadDirectory, path);
+function copyDownloadedFiles(targetPath) {
+    shell.mv(config.videoDownloadDirectory + "*.*", targetPath);
+    // fs.copyFile(config.videoDownloadDirectory, targetPath, (err) => {
+    //     if (err) throw err;
+    //     console.log('source.txt was copied to destination.txt');
+    // });
+    // shell.cp('-R', config.videoDownloadDirectory, targetPath);
 }
 
 function emptyDownloadedDir() {
@@ -189,7 +191,7 @@ function splitvideo(sourceFolderPath, compressedSrc, pathIndex, start) {
             .setStartTime(startTime)
             .setDuration(videoTime)
             .noAudio()
-            .output(sourceFolderPath + '\\Camcs' + '.mp4')
+            .output(sourceFolderPath + '\\camcs' + '.mp4')
             .on('progress', function (info) {
                 console.log('progress ', info);
             })
@@ -237,7 +239,7 @@ async function splitProcedure(sourceFolderPath, compressedFilePath, fsizeInMS) {
         console.log(splitVideoPath)
         splitVideoPath = sourceFolderPath + '\\split' + index;
         createdirectory(splitVideoPath);
-        await splitvideo(splitVideoPath, compressedFilePath, index, startTime)
+        var video =await splitvideo(splitVideoPath, compressedFilePath, index, startTime)
         await noVideo(splitVideoPath, compressedFilePath, index, startTime)
         var splitFileSize;  //split value ka size kitna hoga, ye define krna h abhi i.e., config.videoMaxLength
         writeJsonFile(splitVideoPath, splitFileSize);
@@ -268,64 +270,61 @@ function writeJsonFile(path, startTime) {
     // console.log(config.length)
     for (let i = 0; i < config.videoProcessingData.length; i++) {
         try {
+            // dirPath = __dirname + config.videoDirectory + config.teacher;
+            // const writeFile = function () {
+            //     fs.writeFile("/tmp/test", "Hey there!", function (err) {
+            //         if (err) {
+            //             return console.log(err);
+            //         }
+            //         console.log("The file was saved!");
+            //     });
+            // }
             // screeSize();
-            writeLogFile();
-            // let videodata = config.videoProcessingData[i];
+            // writeLogFile();
+
+            let videodata = config.videoProcessingData[i];
             // //Open chrome with given url
             // await open(videodata.url, "chrome --kiosk");
             // await promSetTime(delayMaker, 5000);
             // // Type password to open the meeting
             // await promSetTime(typePwd, 4000, i);
-            // //Will press enter when the password is filled
+            // // //Will press enter when the password is filled
             // await promSetTime(enter, 5000);
-            // //Will take cursor on download file
+            // // //Will take cursor on download file
             // await promSetTime(downloadRecordings, 6000);
-            createDirectoryUsingFolderName(videodata.teacher);
-            // // // check file downloaded
-            // await pSetInterval(1000);
+            var batchPath = path.join(__dirname, config.videoDir, videodata.teacher, currdate, videodata.batch);
+            createBatchDirectory(batchPath);
+            // // check file downloaded            
+            await pSetInterval(1000);
             // // console.log("At 281");
-            // await promSetTime(copyDownloadedFiles, 1000, videodata.teacher);
-            // // emptyDownloadedDir();//     var sourcePath = "./data/sushant/sushant.mp4"
+            await promSetTime(copyDownloadedFiles, 1000, batchPath);
+            // // // emptyDownloadedDir();//     var sourcePath = "./data/sushant/sushant.mp4"
             // console.log(__dirname)
-            // var fileName = findFileNameUsingExt(__dirname + config.videoDirectory + videodata.teacher + "\\" + currdate + "\\Downloads", 'mp4');
-            // console.log("fileName", fileName);
-            // var sourceFolderPath = path.join(__dirname + config.videoDirectory + videodata.teacher + '\\' + currdate + "\\Downloads", fileName);
-            // var CopysourceFolderPath = path.join(__dirname + config.videoDirectory + videodata.teacher + '\\' + currdate + "\\Downloads");
-            // var compressedFilePath = __dirname + config.videoDirectory + videodata.teacher + "\\" + currdate + "\\Downloads" + '\\' + 'compressed.mp4';
-            // await compressVideo(sourceFolderPath, compressedFilePath);
-            // let fsizeInSec = await getVideoDurationInSeconds(compressedFilePath);
-            // let fsizeInMS = fsizeInSec * 1000;
-            // await splitProcedure(CopysourceFolderPath, compressedFilePath, fsizeInMS)
-            // emptyDownloadedDir();
-        }
-        catch (err) {
+            var fileName = findFileNameUsingExt(batchPath, 'mp4');
+            console.log("fileName", fileName);
+            var srcFilePath = batchPath + "\\" + fileName;
+            var compressedFilePath = batchPath + '\\' + 'compressed.mp4';
+            await compressVideo(srcFilePath, compressedFilePath);
+            let fsizeInSec = await getVideoDurationInSeconds(compressedFilePath);
+            let fsizeInMS = fsizeInSec * 1000;
+            await splitProcedure(batchPath, compressedFilePath, fsizeInMS)
+            emptyDownloadedDir();
+        } catch (err) {
             console.log("catch 281", err.message);
             break;
         }
     }
 })();
 
-
-function promSetTime(cb, delay, i) {
+function promSetTime(cb, delay, val) {
     return new Promise(function (resolve, reject) {
         setTimeout(function () {
-            cb(i);
+            cb(val);
             resolve();
         }, delay)
     })
 }
+
 function delayMaker() {
     console.log("Hello");
 }
-// (async () => {
-//     var videoUrl = config.videoProcessingData[0].url;
-//     // setTimeout(open(videoUrl, "chrome --kiosk"), 2000);
-//     // setTimeout(typePwd, 3000);
-//     // setTimeout(enter, 4000);
-//     // setTimeout(downloadRecordings, 5000);
-//     // createDirectory(config.videoProcessingData[0].teacher);
-//     // setTimeout(copyDownloadedFiles("teacher"), 1000);
-//     // createDirectory(config.videoProcessingData[0].teacher); 
-//     // copyDownloadedFiles(config.videoProcessingData[0].teacher);
-//     // emptyDownloadedDir();
-// })();
