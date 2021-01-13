@@ -60,7 +60,6 @@ function createVideoDirPath(teacherName, batch) {
 }
 
 function createBatchDirectory(path) {
-
     shell.mkdir('-p', path);
 }
 
@@ -230,7 +229,6 @@ function noVideo(sourceFolderPath, compressedSrc, pathIndex, start) {
 }
 
 async function splitProcedure(sourceFolderPath, compressedFilePath, fsizeInMS) {
-
     var startTime = 0;
     var remain = fsizeInMS;
     var index = 1;
@@ -284,14 +282,14 @@ function writeJsonFile(path, startTime) {
 
             let videodata = config.videoProcessingData[i];
             // //Open chrome with given url
-            // await open(videodata.url, "chrome --kiosk");
-            // await promSetTime(delayMaker, 5000);
+            await open(videodata.url, "chrome --kiosk");
+            await promSetTime(delayMaker, 5000);
             // // Type password to open the meeting
-            // await promSetTime(typePwd, 4000, i);
+            await promSetTime(typePwd, 4000, i);
             // // //Will press enter when the password is filled
-            // await promSetTime(enter, 5000);
+            await promSetTime(enter, 5000);
             // // //Will take cursor on download file
-            // await promSetTime(downloadRecordings, 6000);
+            await promSetTime(downloadRecordings, 6000);
             var batchPath = path.join(__dirname, config.videoDir, videodata.teacher, currdate, videodata.batch);
             createBatchDirectory(batchPath);
             // // check file downloaded            
